@@ -1,0 +1,29 @@
+{
+  "name": "job-search-automation",
+  "version": "1.0.0",
+  "description": "Automated job search and application system",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "trigger.dev dev",
+    "deploy": "trigger.dev deploy",
+    "list": "trigger.dev runs list",
+    "trigger": "trigger.dev trigger"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@trigger.dev/sdk": "latest",
+    "firebase": "^10.7.0",
+    "firebase-admin": "^12.0.0",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "latest",
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0"
+  }
+}
