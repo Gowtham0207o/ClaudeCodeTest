@@ -12,7 +12,10 @@ export async function extractText(
   const name = filename.toLowerCase();
 
   if (mimetype === "application/pdf" || name.endsWith(".pdf")) {
-    const pdfParse = (await import("pdf-parse")).default;
+    // pdf-parse is a CommonJS module; use createRequire to load it
+    const { createRequire } = await import("module");
+    const require = createRequire(import.meta.url);
+    const pdfParse = require("pdf-parse");
     const out = await pdfParse(buffer);
     return out.text;
   }
