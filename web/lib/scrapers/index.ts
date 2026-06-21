@@ -5,7 +5,6 @@ import { scrapeRemotive } from "./remotive";
 import { scrapeArbeitnow } from "./arbeitnow";
 import { scrapeJobicy } from "./jobicy";
 import { scrapeTheMuse } from "./themuse";
-import { scrapeLinkedInComposio } from "./linkedin-composio";
 
 export type { ScrapeQuery, ScrapedJob, SourceResult } from "./types";
 
@@ -15,7 +14,6 @@ const SCRAPERS = [
   scrapeArbeitnow,
   scrapeJobicy,
   scrapeTheMuse,
-  scrapeLinkedInComposio,
 ];
 
 export interface ScrapeRunResult {
