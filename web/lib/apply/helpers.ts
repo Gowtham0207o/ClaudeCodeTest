@@ -59,13 +59,26 @@ export async function showHandoffBanner(page: PwPage): Promise<void> {
 
 /**
  * Supervised hold: keep the visible window open so the user can intervene and
- * finish the application by hand. Resolves as soon as they close the window, or
- * after `maxMs` as a safety cap so the request can never hang forever.
+ * finish the application by hand. Resolves as soon as they close the window,
+ * after `maxMs` as a safety cap, or immediately if `signal` aborts (user hit
+ * “Stop”) — so the request can never hang forever.
  */
-export async function lingerForHandoff(page: PwPage, maxMs = 8 * 60_000): Promise<void> {
+export async function lingerForHandoff(
+  page: PwPage,
+  maxMs = 8 * 60_000,
+  signal?: AbortSignal,
+): Promise<void> {
   try {
-    if (page.isClosed()) return;
-    await page.waitForEvent("close", { timeout: maxMs });
+    if (page.isClosed() || signal?.aborted) return;
+    const closed = page.waitForEvent("close", { timeout: maxMs });
+    if (!signal) {
+      await closed;
+      return;
+    }
+    await Promise.race([
+      closed,
+      new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true })),
+    ]);
   } catch {
     /* timed out — the user left the window open; we close it ourselves */
   }

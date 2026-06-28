@@ -36,8 +36,10 @@ async function loadJob(jobId: string): Promise<Job | null> {
  */
 export async function* runPipeline(
   jobId: string,
-  opts: { supervised?: boolean } = {},
+  opts: { supervised?: boolean; signal?: AbortSignal } = {},
 ): AsyncGenerator<PipelineEvent> {
+  const stopped = () => !!opts.signal?.aborted;
+
   // 1. SCRAPE — pull the job from the store.
   yield ev("scrape", "running", "Loading job from the store…");
   const job = await loadJob(jobId);
@@ -47,6 +49,10 @@ export async function* runPipeline(
   }
   const profile = await getProfile();
   yield ev("scrape", "done", `Loaded “${job.title}” @ ${job.company}.`, { job });
+  if (stopped()) {
+    yield ev("match", "error", "Stopped by you.");
+    return;
+  }
 
   // 2. MATCH — score against the profile.
   yield ev("match", "running", "Scoring against your profile…");
@@ -80,6 +86,11 @@ export async function* runPipeline(
     return;
   }
 
+  if (stopped()) {
+    yield ev("tailor", "error", "Stopped by you.");
+    return;
+  }
+
   // 3. TAILOR — fetch the JD, rewrite the resume, compile a per-job PDF.
   yield ev("tailor", "running", "Fetching the JD & extracting keywords…");
   const jd = await enrichJob(job);
@@ -107,6 +118,11 @@ export async function* runPipeline(
     { tailored, resume },
   );
 
+  if (stopped()) {
+    yield ev("apply", "error", "Stopped by you.");
+    return;
+  }
+
   // 4. APPLY — only auto-submit when confidence clears the auto-apply gate.
   if (match.verdict === "auto-apply") {
     yield ev(
@@ -124,6 +140,7 @@ export async function* runPipeline(
       applyUrl: jd.applyUrl,
       live: profile.automation.live,
       supervised: opts.supervised,
+      signal: opts.signal,
     });
     base.status = result.submitted ? "applied" : "matched";
     base.appliedAt = result.appliedAt;
@@ -147,6 +164,11 @@ export async function* runPipeline(
       "skipped",
       `Held for review (confidence ${match.confidence}% < auto-apply ${profile.preferences.minConfidence}%).`,
     );
+  }
+
+  if (stopped()) {
+    yield ev("track", "error", "Stopped by you.");
+    return;
   }
 
   // 5. TRACK — persist + schedule a follow-up.

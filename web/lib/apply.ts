@@ -142,6 +142,10 @@ export async function submitApplication(
     };
   }
 
+  if (opts.signal?.aborted) {
+    return { submitted: false, method: `stopped:${methodBase}`, error: "Stopped before apply.", appliedAt };
+  }
+
   const supervised = !!opts.supervised;
   let browser: PwBrowser | null = null;
   try {
@@ -183,7 +187,7 @@ export async function submitApplication(
     // submit by hand. Blocks until they close the window (or a safety timeout).
     if (supervised) {
       await showHandoffBanner(activePage);
-      await lingerForHandoff(activePage);
+      await lingerForHandoff(activePage, undefined, opts.signal);
     }
 
     try {

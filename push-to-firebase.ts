@@ -12,17 +12,19 @@ import { JobListing } from "./src/lib/firebase.js";
 config();
 
 // Initialize Firebase Admin SDK
+// All credential fields come from the environment (.env / .env.local) — never
+// hardcode service-account identifiers in source.
 const serviceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
-  private_key_id: "e1d5f3b09b01d352113eda649a7cf98db9f043cd",
+  private_key_id: process.env.FIREBASE_ADMIN_PRIVATE_KEY_ID,
   private_key: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n"),
   client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-  client_id: "107192788267542250604",
+  client_id: process.env.FIREBASE_ADMIN_CLIENT_ID,
   auth_uri: "https://accounts.google.com/o/oauth2/auth",
   token_uri: "https://oauth2.googleapis.com/token",
   auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-  client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40jobscrapper-42378.iam.gserviceaccount.com",
+  client_x509_cert_url: process.env.FIREBASE_ADMIN_CLIENT_CERT_URL,
   universe_domain: "googleapis.com",
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Search,
@@ -15,6 +15,7 @@ import {
   Sparkles,
   FileText,
   Eye,
+  Square,
 } from "lucide-react";
 import { ConfidenceRing, SourceBadge, Spinner, EmptyState } from "@/components/ui";
 import { cn, downloadFile } from "@/lib/utils";
@@ -59,6 +60,8 @@ export default function PipelinePage() {
   const [usedAI, setUsedAI] = useState(false);
   const [application, setApplication] = useState<Application | null>(null);
   const [log, setLog] = useState<PipelineEvent[]>([]);
+  const [stopping, setStopping] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const loadJobs = useCallback(async () => {
     const res = await fetch("/api/jobs");
@@ -85,13 +88,18 @@ export default function PipelinePage() {
     if (!selected || running) return;
     reset();
     setRunning(true);
+    setStopping(false);
     setStages((s) => ({ ...s, scrape: { status: "running", message: "Starting…" } }));
+
+    const ac = new AbortController();
+    abortRef.current = ac;
 
     try {
       const res = await fetch("/api/pipeline/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jobId: selected.job.id, supervised }),
+        signal: ac.signal,
       });
       if (!res.body) throw new Error("No stream");
 
@@ -112,15 +120,37 @@ export default function PipelinePage() {
         }
       }
     } catch (err) {
-      setStages((s) => ({
-        ...s,
-        scrape: { status: "error", message: err instanceof Error ? err.message : "Failed" },
-      }));
+      if (ac.signal.aborted || (err instanceof Error && err.name === "AbortError")) {
+        // User hit Stop — mark whatever was mid-flight as stopped, not failed.
+        setStages((s) => {
+          const next = { ...s };
+          for (const id of Object.keys(next) as PipelineStageId[]) {
+            if (next[id].status === "running") next[id] = { status: "error", message: "Stopped" };
+          }
+          return next;
+        });
+        setLog((l) => [
+          ...l,
+          { stage: "apply", status: "error", message: "Pipeline stopped by you.", at: new Date().toISOString() } as PipelineEvent,
+        ]);
+      } else {
+        setStages((s) => ({
+          ...s,
+          scrape: { status: "error", message: err instanceof Error ? err.message : "Failed" },
+        }));
+      }
     } finally {
+      abortRef.current = null;
       setRunning(false);
+      setStopping(false);
       loadJobs();
     }
   }, [selected, running, loadJobs, supervised]);
+
+  const stop = useCallback(() => {
+    setStopping(true);
+    abortRef.current?.abort();
+  }, []);
 
   function applyEvent(evt: PipelineEvent) {
     setLog((l) => [...l, evt]);
@@ -219,14 +249,27 @@ export default function PipelinePage() {
                 </span>
               </label>
 
-              <button
-                onClick={run}
-                disabled={running}
-                className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 glow-accent"
-              >
-                {running ? <Loader2 className="size-4 animate-spin" /> : supervised ? <Eye className="size-4" /> : <Play className="size-4" />}
-                {running ? "Running pipeline…" : supervised ? "Run pipeline (watch it apply)" : "Run autonomous pipeline"}
-              </button>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={run}
+                  disabled={running}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 glow-accent"
+                >
+                  {running ? <Loader2 className="size-4 animate-spin" /> : supervised ? <Eye className="size-4" /> : <Play className="size-4" />}
+                  {running ? "Running pipeline…" : supervised ? "Run pipeline (watch it apply)" : "Run autonomous pipeline"}
+                </button>
+                {running && (
+                  <button
+                    onClick={stop}
+                    disabled={stopping}
+                    title="Stop the run — closes the browser if it's open"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-60"
+                  >
+                    {stopping ? <Loader2 className="size-4 animate-spin" /> : <Square className="size-4" />}
+                    {stopping ? "Stopping…" : "Stop"}
+                  </button>
+                )}
+              </div>
             </>
           ) : (
             <EmptyState title="Select a job to begin" />

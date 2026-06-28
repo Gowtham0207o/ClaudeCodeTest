@@ -17,6 +17,11 @@ export interface ApplyOptions {
    * flows only — the unattended cron stays headless.
    */
   supervised?: boolean;
+  /**
+   * Cooperative cancellation. When this aborts (user hit “Stop”), we stop
+   * waiting on the supervised handoff and let the browser close so the run ends.
+   */
+  signal?: AbortSignal;
 }
 
 export interface ApplyResult {

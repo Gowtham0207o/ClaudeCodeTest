@@ -203,10 +203,10 @@ If there are more than 12 jobs, pagination buttons appear at the bottom:
 
 ### Firebase Integration
 The dashboard connects directly to Firebase Firestore:
-- **Project**: jobscrapper-42378
+- **Project**: `<your-firebase-project-id>`
 - **Database**: jobs collection
 - **Real-time**: Loads latest data on refresh
-- **Credentials**: In `public/index.html` (client SDK)
+- **Credentials**: fill the placeholder web config in `public/index.html` (client SDK) with your own
 
 ### Auto-Refresh
 Dashboard automatically updates every 30 seconds when:
