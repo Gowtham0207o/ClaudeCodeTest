@@ -2,6 +2,7 @@ import { scrapeAndStore } from "@/lib/scrape";
 import { matchJob } from "@/lib/match";
 import { getProfile } from "@/lib/profile";
 import { db } from "@/lib/firebase-admin";
+import type { Job } from "@/lib/types";
 
 /** Admin test endpoint — verify scraping and matching works. */
 export async function GET() {
@@ -24,7 +25,7 @@ export async function GET() {
 
     // 2. Load jobs from Firestore
     const jobsSnap = await db().collection("jobs").limit(10).get();
-    const jobs = jobsSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as Array<{ id: string; title: string; company: string; requiredSkills?: string[] }>;
+    const jobs = jobsSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as unknown as Array<Job>;
 
     // 3. Test matching on first job
     const matchResults: { jobId: string; title: string; company: string; confidence: number; verdict: string }[] = [];
