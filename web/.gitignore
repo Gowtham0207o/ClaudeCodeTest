@@ -43,6 +43,3 @@ next-env.d.ts
 # Local tools (Tectonic binary) and runtime artifacts
 tools/
 .runtime/
-
-# Personal résumé template — contains PII (address, phone). Keep local only.
-resume/template.tex
