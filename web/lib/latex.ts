@@ -20,7 +20,14 @@ const execFileAsync = promisify(execFile);
 
 // Computed lazily (not at module scope) so the bundler doesn't statically
 // trace the whole project from a top-level process.cwd() filesystem op.
-const defaultTemplate = () => path.join(process.cwd(), "resume", "template.tex");
+const defaultTemplate = () => {
+  // In Next.js, __dirname is not available, so we use process.cwd()
+  // The app runs from the project root, so web/resume/template.tex needs proper path
+  const cwd = process.cwd();
+  const templatePath = path.join(cwd, "web", "resume", "template.tex");
+  // Fallback: also check without "web/" prefix in case app runs from web directory
+  return existsSync(templatePath) ? templatePath : path.join(cwd, "resume", "template.tex");
+};
 const runtimeDir = () => path.join(process.cwd(), ".runtime", "resumes");
 
 /** Escape the characters that are special in LaTeX. Backslash must go first. */
@@ -152,9 +159,22 @@ async function compileHosted(tex: string, pdfPath: string): Promise<boolean> {
 export async function readBaseTemplate(profile: Profile): Promise<string> {
   const fallbackTemplate = defaultTemplate();
   const templatePath = profile.resumeTemplatePath || fallbackTemplate;
-  return existsSync(templatePath)
-    ? readFile(templatePath, "utf8")
-    : readFile(fallbackTemplate, "utf8");
+
+  // Try the specified path first, then fallback
+  if (existsSync(templatePath)) {
+    return readFile(templatePath, "utf8");
+  }
+
+  // Try fallback if different from templatePath
+  if (templatePath !== fallbackTemplate && existsSync(fallbackTemplate)) {
+    return readFile(fallbackTemplate, "utf8");
+  }
+
+  // If still not found, throw helpful error
+  throw new Error(
+    `Resume template not found at ${templatePath} or fallback ${fallbackTemplate}. ` +
+    `Please ensure web/resume/template.tex exists.`
+  );
 }
 
 /**

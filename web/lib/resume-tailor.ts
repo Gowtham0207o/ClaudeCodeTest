@@ -161,7 +161,7 @@ export async function tailorResumeFromJd(
     if (deep) {
       const tex = `${split.preamble}\n${deep.latexBody}\n\\end{document}\n`;
       const woven = newKeywords(cleanBody, deep.keywords);
-      const artifact = await emitAndCompile(jobId, tex, woven, { allowHosted: false });
+      const artifact = await emitAndCompile(jobId, tex, woven, { allowHosted: true });
       if (artifact.compiledWith !== "stub") {
         core = {
           pdfUrl: artifact.pdfUrl,
