@@ -58,27 +58,29 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-xs sm:text-sm text-[var(--color-muted)]">
             Your autonomous job-application command center.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={seed}
             disabled={seeding}
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] px-4 py-2 text-sm font-medium hover:bg-[var(--color-elevated)] disabled:opacity-60"
+            className="inline-flex items-center justify-center sm:justify-start gap-2 rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] px-4 py-2 text-sm font-medium hover:bg-[var(--color-elevated)] disabled:opacity-60"
           >
             {seeding ? <Spinner /> : <Database className="size-4" />}
-            Seed sample data
+            <span className="hidden sm:inline">Seed sample data</span>
+            <span className="sm:hidden">Seed</span>
           </button>
           <Link
             href="/pipeline"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-4 py-2 text-sm font-semibold text-white glow-accent"
+            className="inline-flex items-center justify-center sm:justify-start gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-4 py-2 text-sm font-semibold text-white glow-accent"
           >
-            <Zap className="size-4" /> Run pipeline
+            <Zap className="size-4" /> <span className="hidden sm:inline">Run pipeline</span>
+            <span className="sm:hidden">Run</span>
           </Link>
         </div>
       </div>
@@ -89,7 +91,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Jobs in store" value={totals?.jobs ?? 0} sub="across all sources" delay={0} />
             <StatCard
               label="Auto-apply ready"
@@ -114,7 +116,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-[1.3fr_1fr]">
             <Panel
               title="Recent activity"
               action={

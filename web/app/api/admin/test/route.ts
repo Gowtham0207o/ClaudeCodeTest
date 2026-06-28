@@ -2,10 +2,9 @@ import { scrapeAndStore } from "@/lib/scrape";
 import { matchJob } from "@/lib/match";
 import { getProfile } from "@/lib/profile";
 import { db } from "@/lib/firebase-admin";
-import type { ScrapedJob } from "@/lib/scrapers";
 
 /** Admin test endpoint — verify scraping and matching works. */
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const profile = await getProfile();
 
@@ -30,7 +29,7 @@ export async function GET(req: Request) {
     // 3. Test matching on first job
     const matchResults: { jobId: string; title: string; company: string; confidence: number; verdict: string }[] = [];
     for (const job of jobs) {
-      const match = matchJob(job as any, profile);
+      const match = matchJob(job, profile);
       matchResults.push({
         jobId: job.id,
         title: job.title,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Search,
@@ -165,17 +165,17 @@ export default function PipelinePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Header />
 
       {/* Job picker + run control */}
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_2fr]">
-        <div className="card p-5">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-[1.1fr_2fr]">
+        <div className="card p-4 sm:p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Pick a job</h2>
+            <h2 className="text-xs sm:text-sm font-semibold">Pick a job</h2>
             <span className="text-xs text-[var(--color-faint)]">{jobs.length} matched</span>
           </div>
-          <div className="max-h-[420px] space-y-2 overflow-auto pr-1">
+          <div className="max-h-[300px] sm:max-h-[420px] space-y-2 overflow-auto pr-1">
             {jobs.length === 0 && <EmptyState title="No jobs yet" hint="Seed data from the Dashboard." />}
             {jobs.map((s) => (
               <button
@@ -200,21 +200,21 @@ export default function PipelinePage() {
         </div>
 
         {/* Selected + run */}
-        <div className="card flex flex-col p-5">
+        <div className="card flex flex-col p-4 sm:p-5">
           {selected ? (
             <>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-lg font-semibold">{selected.job.title}</p>
-                  <p className="text-sm text-[var(--color-muted)]">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-base sm:text-lg font-semibold truncate">{selected.job.title}</p>
+                  <p className="text-xs sm:text-sm text-[var(--color-muted)] truncate">
                     {selected.job.company} · {selected.job.location ?? "—"}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {(selected.job.requiredSkills ?? []).slice(0, 8).map((sk) => (
+                    {(selected.job.requiredSkills ?? []).slice(0, 6).map((sk) => (
                       <span
                         key={sk}
                         className={cn(
-                          "rounded-md px-2 py-0.5 text-[11px]",
+                          "rounded-md px-2 py-0.5 text-[10px] sm:text-[11px]",
                           selected.match.matchedSkills.includes(sk)
                             ? "bg-emerald-500/15 text-emerald-300"
                             : "bg-white/5 text-[var(--color-faint)]",
@@ -225,7 +225,7 @@ export default function PipelinePage() {
                     ))}
                   </div>
                 </div>
-                <ConfidenceRing value={selected.match.confidence} size={64} />
+                <ConfidenceRing value={selected.match.confidence} size={48} stroke={3} />
               </div>
 
               <label className="mt-5 flex cursor-pointer items-start gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3">
@@ -249,23 +249,24 @@ export default function PipelinePage() {
                 </span>
               </label>
 
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={run}
                   disabled={running}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 glow-accent"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-violet)] px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 glow-accent"
                 >
-                  {running ? <Loader2 className="size-4 animate-spin" /> : supervised ? <Eye className="size-4" /> : <Play className="size-4" />}
-                  {running ? "Running pipeline…" : supervised ? "Run pipeline (watch it apply)" : "Run autonomous pipeline"}
+                  {running ? <Loader2 className="size-3 sm:size-4 animate-spin" /> : supervised ? <Eye className="size-3 sm:size-4" /> : <Play className="size-3 sm:size-4" />}
+                  <span className="hidden sm:inline">{running ? "Running pipeline…" : supervised ? "Run pipeline (watch it apply)" : "Run autonomous pipeline"}</span>
+                  <span className="sm:hidden">{running ? "Running…" : "Run"}</span>
                 </button>
                 {running && (
                   <button
                     onClick={stop}
                     disabled={stopping}
                     title="Stop the run — closes the browser if it's open"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-60"
                   >
-                    {stopping ? <Loader2 className="size-4 animate-spin" /> : <Square className="size-4" />}
+                    {stopping ? <Loader2 className="size-3 sm:size-4 animate-spin" /> : <Square className="size-3 sm:size-4" />}
                     {stopping ? "Stopping…" : "Stop"}
                   </button>
                 )}
@@ -278,10 +279,10 @@ export default function PipelinePage() {
       </div>
 
       {/* Stage flow */}
-      <div className="card p-6 grid-bg">
-        <div className="flex items-stretch justify-between gap-2">
+      <div className="card p-4 sm:p-6 grid-bg">
+        <div className="flex items-stretch justify-between gap-1 sm:gap-2 overflow-x-auto">
           {STAGES.map((stage, i) => (
-            <div key={stage.id} className="flex flex-1 items-center">
+            <div key={stage.id} className="flex flex-1 items-center min-w-0">
               <StageNode stage={stage} state={stages[stage.id]} />
               {i < STAGES.length - 1 && (
                 <Connector active={stages[stage.id].status === "done"} />
@@ -297,7 +298,7 @@ export default function PipelinePage() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid gap-6 lg:grid-cols-2"
+            className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2"
           >
             {match && <MatchCard match={match} />}
             {tailored && <TailoredCard tailored={tailored} usedAI={usedAI} application={application} />}
@@ -320,13 +321,13 @@ function initStages() {
 function Header() {
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Live Pipeline</h1>
-        <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[11px] font-medium text-[var(--color-accent-bright)]">
+      <div className="flex items-center gap-2 flex-wrap">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Live Pipeline</h1>
+        <span className="rounded-full bg-[var(--color-accent)]/15 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-[var(--color-accent-bright)]">
           end-to-end
         </span>
       </div>
-      <p className="mt-1 text-sm text-[var(--color-muted)]">
+      <p className="mt-1 text-xs sm:text-sm text-[var(--color-muted)]">
         One job, fully autonomous — scrape → match → tailor → apply → track. No manual steps.
       </p>
     </div>
@@ -349,25 +350,26 @@ function StageNode({
         animate={{ scale: isRunning ? [1, 1.08, 1] : 1 }}
         transition={{ repeat: isRunning ? Infinity : 0, duration: 1.2 }}
         className={cn(
-          "grid size-14 place-items-center rounded-2xl border transition-colors",
+          "grid place-items-center rounded-2xl border transition-colors size-10 sm:size-14",
           isRunning && "animate-pulse-ring",
         )}
         style={{ borderColor: color, background: `color-mix(in srgb, ${color} 12%, transparent)` }}
       >
         {state.status === "done" ? (
-          <Check className="size-6" style={{ color }} />
+          <Check className="size-4 sm:size-6" style={{ color }} />
         ) : state.status === "error" ? (
-          <X className="size-6" style={{ color }} />
+          <X className="size-4 sm:size-6" style={{ color }} />
         ) : isRunning ? (
-          <Loader2 className="size-6 animate-spin" style={{ color }} />
+          <Loader2 className="size-4 sm:size-6 animate-spin" style={{ color }} />
         ) : (
-          <Icon className="size-6" style={{ color }} />
+          <Icon className="size-4 sm:size-6" style={{ color }} />
         )}
       </motion.div>
-      <p className="mt-2 text-xs font-semibold" style={{ color: state.status === "pending" ? "var(--color-muted)" : color }}>
-        {stage.label}
+      <p className="mt-1 sm:mt-2 text-[10px] sm:text-xs font-semibold" style={{ color: state.status === "pending" ? "var(--color-muted)" : color }}>
+        <span className="hidden sm:inline">{stage.label}</span>
+        <span className="sm:hidden">{stage.label.slice(0, 3)}</span>
       </p>
-      <p className="mt-0.5 h-8 max-w-[150px] text-[10px] leading-tight text-[var(--color-faint)]">
+      <p className="mt-0.5 h-6 sm:h-8 max-w-[100px] sm:max-w-[150px] text-[8px] sm:text-[10px] leading-tight text-[var(--color-faint)]">
         {state.message}
       </p>
     </div>

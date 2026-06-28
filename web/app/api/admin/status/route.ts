@@ -1,8 +1,31 @@
 import { db } from "@/lib/firebase-admin";
 import { getProfile } from "@/lib/profile";
 
+interface Job {
+  title: string;
+  company: string;
+  source: string;
+  fetchedAt: unknown;
+}
+
+interface Application {
+  jobTitle: string;
+  company: string;
+  status: string;
+  confidence: number;
+  appliedAt: unknown;
+}
+
+interface Run {
+  trigger: string;
+  live: boolean;
+  status: string;
+  createdAt: unknown;
+  counts?: Record<string, unknown>;
+}
+
 /** Admin status dashboard — check system health. */
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const profile = await getProfile();
 
@@ -14,7 +37,7 @@ export async function GET(req: Request) {
       .limit(5)
       .get();
     const recentJobs = jobsSnap.docs.map((d) => {
-      const data = d.data() as any;
+      const data = d.data() as Job;
       return {
         id: d.id,
         title: data.title,
@@ -32,7 +55,7 @@ export async function GET(req: Request) {
       .limit(5)
       .get();
     const recentApps = appsSnap.docs.map((d) => {
-      const data = d.data() as any;
+      const data = d.data() as Application;
       return {
         id: d.id,
         jobTitle: data.jobTitle,
@@ -50,7 +73,7 @@ export async function GET(req: Request) {
       .limit(10)
       .get();
     const runs = runsSnap.docs.map((d) => {
-      const data = d.data() as any;
+      const data = d.data() as Run;
       return {
         id: d.id,
         trigger: data.trigger,

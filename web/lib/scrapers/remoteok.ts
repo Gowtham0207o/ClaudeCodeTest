@@ -3,7 +3,6 @@ import {
   cleanTags,
   extractExperience,
   fetchJson,
-  looksRemote,
   matchesAnyKeyword,
   stripHtml,
 } from "./util";

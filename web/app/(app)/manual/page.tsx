@@ -8,7 +8,6 @@ import {
   Check,
   Save,
   ClipboardList,
-  ExternalLink,
   RefreshCw,
 } from "lucide-react";
 import { Spinner, EmptyState, SourceBadge } from "@/components/ui";
@@ -23,8 +22,8 @@ export default function ManualApplicationsPage() {
 
   const load = () =>
     fetch("/api/applications")
-      .then((r) => r.json())
-      .then((d) => setApps(((d.applications ?? []) as Application[]).filter((a) => a.source === "manual" || a.manual)))
+      .then((r) => r.json() as Promise<{ applications: Application[] }>)
+      .then((d) => setApps(((d.applications ?? []).filter((a) => a.source === "manual" || a.manual))))
       .finally(() => setLoading(false));
 
   useEffect(() => {
@@ -40,10 +39,10 @@ export default function ManualApplicationsPage() {
     setApps((xs) => xs.map((a) => (a.id === updated.id ? updated : a)));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Manual Applications</h1>
-        <p className="mt-1 text-sm text-[var(--color-muted)]">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Manual Applications</h1>
+        <p className="mt-1 text-xs sm:text-sm text-[var(--color-muted)]">
           Every résumé you tailor is saved here as an application you can edit and track.
         </p>
       </div>
@@ -58,7 +57,7 @@ export default function ManualApplicationsPage() {
           hint="Tailor a résumé on the Tailor Résumé page — it'll be saved here to track."
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {apps.map((a) => (
             <Card key={a.id} app={a} onPatched={patched} onRemove={remove} />
           ))}
@@ -144,86 +143,92 @@ function Card({
   };
 
   return (
-    <div className="card p-4">
-      <div className="flex items-start gap-3">
+    <div className="card p-3 sm:p-4">
+      <div className="flex flex-col gap-3">
         <div className="min-w-0 flex-1 space-y-2">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-sm font-semibold outline-none hover:border-[var(--color-border)] focus:border-[var(--color-accent)]/50"
+            className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-xs sm:text-sm font-semibold outline-none hover:border-[var(--color-border)] focus:border-[var(--color-accent)]/50"
           />
           <input
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             className="w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-xs text-[var(--color-muted)] outline-none hover:border-[var(--color-border)] focus:border-[var(--color-accent)]/50"
           />
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-0.5">
             <SourceBadge source={app.source} />
-            <span className="text-[11px] text-[var(--color-faint)]">created {timeAgo(app.createdAt)}</span>
+            <span className="text-[10px] sm:text-[11px] text-[var(--color-faint)]">created {timeAgo(app.createdAt)}</span>
             {app.appliedAt && (
-              <span className="text-[11px] text-emerald-300">applied {timeAgo(app.appliedAt)}</span>
+              <span className="text-[10px] sm:text-[11px] text-emerald-300">applied {timeAgo(app.appliedAt)}</span>
             )}
           </div>
         </div>
 
-        <select
-          value={status}
-          onChange={(e) => changeStatus(e.target.value as Application["status"])}
-          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1.5 text-xs font-medium capitalize outline-none focus:border-[var(--color-accent)]/50"
-        >
-          {TRACK_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            value={status}
+            onChange={(e) => changeStatus(e.target.value as Application["status"])}
+            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1.5 text-xs font-medium capitalize outline-none focus:border-[var(--color-accent)]/50"
+          >
+            {TRACK_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
 
-        <button
-          onClick={() => onRemove(app.id)}
-          title="Delete"
-          className="rounded-lg p-1.5 text-[var(--color-faint)] transition hover:bg-rose-500/10 hover:text-rose-300"
-        >
-          <Trash2 className="size-4" />
-        </button>
+          <button
+            onClick={() => onRemove(app.id)}
+            title="Delete"
+            className="rounded-lg p-1.5 text-[var(--color-faint)] transition hover:bg-rose-500/10 hover:text-rose-300"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
         {app.resumePdfUrl ? (
           <>
             <button
               onClick={handleDownload}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 hover:border-[var(--color-accent)]/50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-2 sm:px-3 py-1.5 text-xs hover:border-[var(--color-accent)]/50 whitespace-nowrap"
             >
-              <FileText className="size-3.5" /> Download résumé
+              <FileText className="size-3 sm:size-3.5" /> <span className="hidden sm:inline">Download résumé</span>
+              <span className="sm:hidden">Download</span>
             </button>
             <button
               onClick={handleRecompile}
               disabled={recompiling}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 hover:border-[var(--color-accent)]/50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-2 sm:px-3 py-1.5 text-xs hover:border-[var(--color-accent)]/50 disabled:opacity-50 whitespace-nowrap"
               title="Recompile the LaTeX and regenerate the PDF"
             >
-              {recompiling ? <Spinner className="size-3" /> : <RefreshCw className="size-3.5" />}
-              Recompile
+              {recompiling ? <Spinner className="size-2 sm:size-3" /> : <RefreshCw className="size-3 sm:size-3.5" />}
+              <span className="hidden sm:inline">Recompile</span>
+              <span className="sm:hidden">Recompile</span>
             </button>
           </>
         ) : (
           <button
             onClick={handleRecompile}
             disabled={recompiling}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-amber-300 hover:border-amber-500/60 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 sm:px-3 py-1.5 text-amber-300 text-xs hover:border-amber-500/60 disabled:opacity-50 whitespace-nowrap"
             title="Generate the LaTeX resume PDF"
           >
-            {recompiling ? <Spinner className="size-3" /> : <RefreshCw className="size-3.5" />}
-            Compile résumé
+            {recompiling ? <Spinner className="size-2 sm:size-3" /> : <RefreshCw className="size-3 sm:size-3.5" />}
+            <span className="hidden sm:inline">Compile résumé</span>
+            <span className="sm:hidden">Compile</span>
           </button>
         )}
         {app.jobDescription && (
           <button
             onClick={() => setOpenJd((v) => !v)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 hover:border-[var(--color-accent)]/50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-2 sm:px-3 py-1.5 text-xs hover:border-[var(--color-accent)]/50 whitespace-nowrap"
           >
-            <ClipboardList className="size-3.5" /> Job description
-            <ChevronDown className={`size-3 transition ${openJd ? "rotate-180" : ""}`} />
+            <ClipboardList className="size-3 sm:size-3.5" /> <span className="hidden sm:inline">Job description</span>
+            <span className="sm:hidden">JD</span>
+            <ChevronDown className={`size-2.5 sm:size-3 transition ${openJd ? "rotate-180" : ""}`} />
           </button>
         )}
       </div>

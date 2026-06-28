@@ -122,14 +122,14 @@ export function StatCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay }}
-      className="card relative overflow-hidden p-5"
+      className="card relative overflow-hidden p-4 sm:p-5"
     >
       <div
-        className="absolute -top-10 -right-10 size-28 rounded-full blur-2xl opacity-30"
+        className="absolute -top-10 -right-10 size-20 sm:size-28 rounded-full blur-2xl opacity-30"
         style={{ background: accent }}
       />
-      <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-faint)]">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
+      <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-[var(--color-faint)]">{label}</p>
+      <p className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">{value}</p>
       {sub && <p className="mt-1 text-xs text-[var(--color-muted)]">{sub}</p>}
     </motion.div>
   );
@@ -159,11 +159,11 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={cn("card p-5", className)}>
+    <section className={cn("card p-4 sm:p-5", className)}>
       {(title || action) && (
-        <div className="mb-4 flex items-center justify-between">
-          {title && <h2 className="text-sm font-semibold text-[var(--color-text)]">{title}</h2>}
-          {action}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          {title && <h2 className="text-xs sm:text-sm font-semibold text-[var(--color-text)]">{title}</h2>}
+          {action && <div className="text-xs sm:text-sm">{action}</div>}
         </div>
       )}
       {children}
