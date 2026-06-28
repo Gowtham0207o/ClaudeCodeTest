@@ -12,9 +12,21 @@ export async function extractText(
   const name = filename.toLowerCase();
 
   if (mimetype === "application/pdf" || name.endsWith(".pdf")) {
-    // pdf-parse v2 exports a PDFParse class (no default function export).
-    // Construct it with the file bytes, pull the text, then release the doc.
-    const { PDFParse } = await import("pdf-parse");
+    // pdf-parse v2 exposes a PDFParse class. Its published types resolve to a
+    // default-wrapped shape under our module settings, while the CJS runtime
+    // exposes it as a top-level named export — so we normalise both. We cast
+    // through a precise local type rather than trust the (mis-resolving)
+    // bundled types. Construct with the bytes, pull text, then release the doc.
+    type PdfParseCtor = new (opts: { data: Uint8Array }) => {
+      getText(): Promise<{ text: string }>;
+      destroy(): Promise<void>;
+    };
+    const mod = (await import("pdf-parse")) as unknown as {
+      PDFParse?: PdfParseCtor;
+      default?: { PDFParse?: PdfParseCtor };
+    };
+    const PDFParse = mod.PDFParse ?? mod.default?.PDFParse;
+    if (!PDFParse) throw new Error("pdf-parse: PDFParse export not found.");
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     try {
       const out = await parser.getText();
