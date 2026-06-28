@@ -1,7 +1,11 @@
 node_modules/
 dist/
 build/
+.next/
 *.tsbuildinfo
+
+# Runtime artifacts (generated resumes, screenshots)
+.runtime/
 
 # Environment variables
 .env

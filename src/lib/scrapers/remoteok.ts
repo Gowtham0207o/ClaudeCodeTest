@@ -17,26 +17,39 @@ export async function scrapeRemoteOK(): Promise<JobListing[]> {
 
     // RemoteOK API endpoint (free, public access)
     const response = await axios.get("https://remoteok.io/api", {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "application/json",
+      },
       timeout: 10000,
     });
 
     const remoteOKJobs = response.data || [];
 
-    for (const job of remoteOKJobs.slice(0, 50)) {
-      if (job.id === "fakelag") continue; // Skip fake lag indicator
+    if (!Array.isArray(remoteOKJobs)) {
+      console.warn("⚠️ RemoteOK API returned unexpected format");
+      return [];
+    }
 
-      const skills = extractSkills(job.description || "");
+    for (const job of remoteOKJobs.slice(0, 50)) {
+      if (!job.id || job.id === "fakelag") continue; // Skip fake lag indicator
+
+      // Handle different field names from RemoteOK API
+      const title = job.job_title || job.title || "N/A";
+      const company = job.company_name || job.company || "Unknown";
+
+      const skills = extractSkills(job.description || job.job_description || "");
 
       const jobListing: JobListing = {
-        title: job.job_title || "N/A",
-        company: job.company_name || "Unknown",
+        title,
+        company,
         location: job.location || "Remote",
         requiredSkills: skills,
-        jobUrl: job.url || `https://remoteok.io/remote-jobs/${job.id}`,
-        postedDate: job.date_posted || new Date().toISOString(),
+        jobUrl: job.url || job.job_url || `https://remoteok.io/remote-jobs/${job.id}`,
+        postedDate: job.date_posted || job.posted_at || new Date().toISOString(),
         source: "remoteok",
         externalId: `remoteok-${job.id}`,
-        requiredExperience: extractExperience(job.description || ""),
+        requiredExperience: extractExperience(job.description || job.job_description || ""),
       };
 
       jobs.push(jobListing);
@@ -45,7 +58,8 @@ export async function scrapeRemoteOK(): Promise<JobListing[]> {
     console.log(`✅ RemoteOK: Fetched ${jobs.length} jobs`);
     return jobs;
   } catch (error) {
-    console.error("❌ RemoteOK scraping error:", error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`❌ RemoteOK scraping error: ${errorMsg}`);
     return [];
   }
 }

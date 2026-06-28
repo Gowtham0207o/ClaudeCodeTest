@@ -1,7 +1,33 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude config *)"
+      "Bash(claude config *)",
+      "Bash(git commit -m 'feat: Add job search automation scraper with Trigger.dev and Firebase *)",
+      "Bash(timeout 30 npx tsx test-scrapers.ts)",
+      "Bash(timeout 60 npx tsx push-to-firebase.ts)",
+      "Bash(timeout 5 node server.js)",
+      "Bash(timeout 3 node server.js)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":3000\")",
+      "Bash(curl http://localhost:3000)",
+      "Bash(taskkill /f /im node.exe)",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:3000)",
+      "Skill(claude-api)",
+      "Bash(npx --yes create-next-app@latest web --ts --tailwind --app --no-src-dir --import-alias \"@/*\" --use-npm --eslint --no-turbopack --disable-git)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(PORT=3100 npm run dev)",
+      "Bash(echo \"started, pid $!\")",
+      "Bash(time curl -s -m 40 -o /dev/null -w \"http %{http_code}, %{time_total}s\\\\n\" http://localhost:3001/api/jobs)",
+      "Read(//tmp/**)",
+      "Bash(PORT=3005 npm run start)",
+      "Bash(echo \"starting production server, shell pid $!\")",
+      "Bash(npx trigger.dev init)",
+      "Bash(grep -v '^$')",
+      "PowerShell(Get-Process *)",
+      "Bash(curl -s http://localhost:3000/api/admin/status)",
+      "Bash(npm ls *)"
     ]
   }
 }

@@ -14,16 +14,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@trigger.dev/sdk": "latest",
+    "@trigger.dev/sdk": "4.4.6",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
     "firebase": "^10.7.0",
     "firebase-admin": "^12.0.0",
-    "cheerio": "^1.0.0-rc.12",
-    "axios": "^1.6.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@trigger.dev/build": "latest",
-    "typescript": "^5.3.0",
-    "@types/node": "^20.10.0"
+    "@trigger.dev/build": "4.4.6",
+    "@types/node": "^20.10.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.3.0"
   }
 }

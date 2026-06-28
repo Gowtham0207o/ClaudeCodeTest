@@ -1,5 +1,16 @@
 import { db } from "@/lib/firebase-admin";
 
+type RunData = {
+  trigger?: string;
+  live?: boolean;
+  status?: string;
+  quota?: number;
+  startedAt?: unknown;
+  finishedAt?: unknown;
+  counts?: Record<string, number>;
+  events?: Array<unknown>;
+};
+
 /** Get details of a specific batch run. */
 export async function GET(
   _: Request,
@@ -13,7 +24,7 @@ export async function GET(
       return Response.json({ status: "error", error: "Run not found" }, { status: 404 });
     }
 
-    const run = snap.data() as any;
+    const run = snap.data() as RunData;
     return Response.json(
       {
         status: "ok",

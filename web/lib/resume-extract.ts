@@ -12,12 +12,16 @@ export async function extractText(
   const name = filename.toLowerCase();
 
   if (mimetype === "application/pdf" || name.endsWith(".pdf")) {
-    // pdf-parse is a CommonJS module; use createRequire to load it
-    const { createRequire } = await import("module");
-    const require = createRequire(import.meta.url);
-    const pdfParse = require("pdf-parse");
-    const out = await pdfParse(buffer);
-    return out.text;
+    // pdf-parse v2 exports a PDFParse class (no default function export).
+    // Construct it with the file bytes, pull the text, then release the doc.
+    const { PDFParse } = await import("pdf-parse");
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    try {
+      const out = await parser.getText();
+      return out.text;
+    } finally {
+      await parser.destroy();
+    }
   }
 
   if (
@@ -79,13 +83,16 @@ export interface ResumeExtraction {
 /** Turn raw resume text into structured profile fields. Uses OpenAI GPT when an
  *  API key is set, otherwise a deterministic heuristic fallback. */
 export async function extractProfile(text: string): Promise<ResumeExtraction> {
-  const clean = text.replace(/\s+\n/g, "\n").trim().slice(0, 24000);
+  // 12k chars (~3k tokens) is plenty for a résumé; the tail is rarely useful.
+  const clean = text.replace(/\s+\n/g, "\n").trim().slice(0, 12000);
 
   if (hasOpenAI()) {
     try {
       const parsed = await generateJson<Partial<Profile>>({
         schemaName: "resume_profile",
         schema: SCHEMA as unknown as Record<string, unknown>,
+        // Parsing structured fields is a light task — use the cheaper model.
+        model: "gpt-4o-mini",
         user: `Extract a structured profile from this resume. Use the candidate's most senior/current role as "title". Estimate "yearsExperience" as a whole number from the work history. List concrete technical "skills" only. Keep "summary" to 2-3 sentences. Never invent facts that aren't in the resume.\n\n# Resume\n${clean}`,
       });
       return { profile: sanitize(parsed), usedAI: true };

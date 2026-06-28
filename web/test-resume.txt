@@ -1,0 +1,20 @@
+John Doe
+Senior Full Stack Engineer
+
+john.doe@example.com
+Bengaluru, India
+
+5+ years of experience building scalable web applications
+
+SKILLS
+TypeScript, JavaScript, React, Node.js, Next.js, Python, PostgreSQL, MongoDB, Firebase, AWS, Docker, GraphQL
+
+EXPERIENCE
+Tech Lead - Acme Corp (2023-Present)
+- Led team of 5 engineers building microservices
+- Reduced API latency by 40%
+- Mentored junior developers
+
+Senior Engineer - StartupXYZ (2020-2023)
+- Built React/Node.js full-stack applications
+- Implemented CI/CD pipeline with Docker

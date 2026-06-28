@@ -22,8 +22,8 @@ export interface JobListing {
   requiredSkills?: string[];
   jobUrl?: string;
   postedDate?: string;
-  source: "angellist" | "indeed" | "remoteok" | "glassdoor" | "linkedin";
-  fetchedAt: string;
+  source: "angellist" | "indeed" | "remoteok" | "glassdoor" | "linkedin" | "instahyre";
+  fetchedAt?: string;
   externalId?: string;
 }
 
