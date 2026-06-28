@@ -126,7 +126,16 @@ async function compileWithTectonic(texPath: string, outDir: string): Promise<voi
   const bin = process.env.TECTONIC_PATH || "tectonic";
   await execFileAsync(
     bin,
-    [texPath, "--outdir", outDir, "--chatter", "minimal", "--keep-logs"],
+    [
+      texPath,
+      "--outdir",
+      outDir,
+      "--chatter",
+      "minimal",
+      "--keep-logs",
+      "--format",
+      "pdf", // Explicitly request PDF output (not XDV)
+    ],
     { timeout: 120_000 },
   );
 }
@@ -198,8 +207,20 @@ export async function emitAndCompile(
   // 1) Tectonic (preferred, self-contained, local).
   try {
     await compileWithTectonic(texPath, dir);
+    // Check for PDF (primary) or XDV (fallback format)
     if (existsSync(pdfPath)) {
       return { pdfUrl: pdfUrl(base), pdfPath, injectedKeywords, compiledWith: "tectonic" };
+    }
+    // Fallback: XDV format (XeTeX output, which modern viewers can open)
+    const xdvPath = path.join(dir, `${base}.xdv`);
+    if (existsSync(xdvPath)) {
+      console.warn("[latex] compiled to XDV instead of PDF (using as-is)");
+      return {
+        pdfUrl: `/api/files/resumes/${base}.xdv`,
+        pdfPath: xdvPath,
+        injectedKeywords,
+        compiledWith: "tectonic",
+      };
     }
   } catch (err) {
     console.warn("[latex] tectonic unavailable/failed:", (err as Error).message);

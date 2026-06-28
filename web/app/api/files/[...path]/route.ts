@@ -7,6 +7,7 @@ const RUNTIME_DIR = path.join(process.cwd(), ".runtime");
 const ALLOWED_ROOTS = new Set(["resumes", "screenshots"]);
 const TYPES: Record<string, string> = {
   ".pdf": "application/pdf",
+  ".xdv": "application/pdf", // XeTeX output, treated as PDF
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".tex": "text/plain; charset=utf-8",
