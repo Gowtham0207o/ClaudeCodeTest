@@ -126,16 +126,7 @@ async function compileWithTectonic(texPath: string, outDir: string): Promise<voi
   const bin = process.env.TECTONIC_PATH || "tectonic";
   await execFileAsync(
     bin,
-    [
-      texPath,
-      "--outdir",
-      outDir,
-      "--chatter",
-      "minimal",
-      "--keep-logs",
-      "--format",
-      "pdf", // Explicitly request PDF output (not XDV)
-    ],
+    [texPath, "--outdir", outDir, "--chatter", "minimal", "--keep-logs"],
     { timeout: 120_000 },
   );
 }
@@ -204,17 +195,27 @@ export async function emitAndCompile(
   const pdfPath = path.join(dir, `${base}.pdf`);
   await writeFile(texPath, tex, "utf8");
 
+  console.log(`[latex] emitting resume ${base} to ${dir}`);
+
   // 1) Tectonic (preferred, self-contained, local).
   try {
+    console.log(`[latex] attempting tectonic compilation of ${texPath}...`);
     await compileWithTectonic(texPath, dir);
+    console.log(`[latex] tectonic execution completed`);
+
+    // Wait a moment for file system to sync
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Check for PDF (primary) or XDV (fallback format)
     if (existsSync(pdfPath)) {
+      console.log(`[latex] ✓ PDF generated successfully`);
       return { pdfUrl: pdfUrl(base), pdfPath, injectedKeywords, compiledWith: "tectonic" };
     }
+
     // Fallback: XDV format (XeTeX output, which modern viewers can open)
     const xdvPath = path.join(dir, `${base}.xdv`);
     if (existsSync(xdvPath)) {
-      console.warn("[latex] compiled to XDV instead of PDF (using as-is)");
+      console.log(`[latex] ✓ Compiled to XDV format`);
       return {
         pdfUrl: `/api/files/resumes/${base}.xdv`,
         pdfPath: xdvPath,
@@ -222,13 +223,24 @@ export async function emitAndCompile(
         compiledWith: "tectonic",
       };
     }
+
+    console.error(
+      `[latex] ✗ Tectonic succeeded but generated no output files.`,
+      `Expected: ${pdfPath} or ${xdvPath}`
+    );
   } catch (err) {
-    console.warn("[latex] tectonic unavailable/failed:", (err as Error).message);
+    console.error("[latex] ✗ Tectonic failed:", (err as Error).message);
+    console.error("[latex] Tectonic may not be installed. Install from: https://tectonic-typesetting.github.io/");
   }
 
   // 2) Hosted compiler fallback (off by default — uploads the résumé text).
-  if (opts.allowHosted && (await compileHosted(tex, pdfPath))) {
-    return { pdfUrl: pdfUrl(base), pdfPath, injectedKeywords, compiledWith: "hosted" };
+  if (opts.allowHosted) {
+    console.log(`[latex] attempting hosted compiler...`);
+    if (await compileHosted(tex, pdfPath)) {
+      console.log(`[latex] hosted compiler generated PDF at ${pdfPath}`);
+      return { pdfUrl: pdfUrl(base), pdfPath, injectedKeywords, compiledWith: "hosted" };
+    }
+    console.log(`[latex] hosted compiler failed`);
   }
 
   // 3) Stub: the .tex is on disk, no PDF (observable downstream).
